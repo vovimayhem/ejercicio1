@@ -41,4 +41,38 @@ RUN bundle install --jobs=4 --retry=3
 # 6: Definir el comando default:
 CMD ["rails", "server", "-b", "0.0.0.0"]
 
+# Etapa III: Builder
 
+# Paso 1: Empezar desde runtime:
+FROM development AS builder
+
+# Paso 2: Copio el resto del codigo:
+ADD . /usr/src
+
+# Paso 3: Compilar los assets de la aplicacion
+RUN export DATABASE_URL=postgres://postgres@example.com:5432/fakedb \
+    SECRET_KEY_BASE=0000000000000000000000000000000000 \
+    RAILS_ENV=production && \
+    rails assets:precompile
+
+# Paso 4: Eliminar las librerias de ruby que no queremos en produccion:
+RUN bundle config without development:test && bundle clean && rm -rf tmp/*
+
+# Etapa IV: Desplegable (deployable)
+
+FROM runtime AS deployable
+
+# Paso 2: copiar las librerias de ruby que hayan quedado despues de borrar
+# las que no se utilizan en la etapa anterior:
+COPY --from=builder /usr/local/bundle /usr/local/bundle
+
+# Paso 3: Copiar el codigo de la app junto con el codigo compilado y
+# minificado de javascript:
+COPY --from=builder /usr/src /usr/src
+
+# Paso 4: Configurar la app para correr en modo "production":
+ENV RAILS_ENV=production RACK_ENV=production
+
+# Paso 5: 
+
+CMD ["puma"]

@@ -1,0 +1,56 @@
+version: "3.4"
+
+volumes:
+  postgres_data:
+
+networks:
+  frontend:
+  backend:
+
+services:
+  nginx:
+    image: nginx:alpine
+    # Map the host port 80 to container port 80:
+    ports:
+    - 80:80
+    volumes:
+    - type: bind
+      source: ./config/dev.nginx.conf
+      target: /etc/nginx/nginx.conf
+      read_only: true
+    - type: bind
+      source: ./public
+      target: /usr/src/public
+      read_only: true 
+    depends_on:
+    - web
+    networks:
+    - frontend
+
+  web:
+    image: vovimayhem/rails-docker-demo:development
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+    - .:/usr/src
+    depends_on:
+    - postgres
+    networks:
+    - frontend
+    - backend
+    entrypoint: /usr/src/bin/dev-entrypoint
+    environment:
+      DATABASE_URL: postgres://postgres:ejemplo@postgres:5432/ejemplo_development
+      RAILS_ENV: development
+      RACK_ENV: development
+
+  postgres:
+    image: postgres:alpine
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+    networks:
+    - backend
+    environment:
+      POSTGRES_PASSWORD: ejemplo
+

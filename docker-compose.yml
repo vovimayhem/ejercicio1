@@ -2,6 +2,7 @@ version: "3.4"
 
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   frontend:
@@ -21,7 +22,7 @@ services:
     - type: bind
       source: ./public
       target: /usr/src/public
-      read_only: true 
+      read_only: true
     depends_on:
     - web
     networks:
@@ -52,11 +53,14 @@ services:
     - frontend
     - backend
     command: rails server -p 3000 -b 0.0.0.0
-    environment:
+    depends_on:
+    - postgres
+    - redis
+    environment: &app_env
       DATABASE_URL: postgres://postgres:ejemplo@postgres:5432/ejemplo_development
+      REDIS_URL: redis://redis:6379/0
       RAILS_ENV: development
       RACK_ENV: development
-
 
   postgres:
     image: postgres:alpine
@@ -67,3 +71,10 @@ services:
     environment:
       POSTGRES_PASSWORD: ejemplo
 
+  redis:
+    image: redis:alpine
+    volumes:
+    - redis_data:/var/lib/redis
+    command: redis-server --appendonly yes
+    networks:
+    - backend

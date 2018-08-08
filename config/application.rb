@@ -28,6 +28,9 @@ module Demo
     # Don't generate system test files.
     config.generators.system_tests = nil
 
+    # Configure sidekiq queue adapter:
+    config.active_job.queue_adapter = :sidekiq
+
     config.generators do |g|
       # Disable the generation of controller specs:
       g.test_framework :rspec, controller_specs: false

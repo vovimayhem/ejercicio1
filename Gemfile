@@ -41,6 +41,9 @@ gem 'rack-cors', '~> 1.0', '>= 1.0.2', require: 'rack/cors'
 # Efficient, convenient, non-intrusive JSONAPI framework for Rails.
 gem 'jsonapi-rails', '~> 0.3.1'
 
+# Simple, efficient background processing for Ruby:
+gem 'sidekiq', '~> 5.1', '>= 5.1.3'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

@@ -16,6 +16,11 @@
     <%= form.text_area :body, id: :post_body %>
   </div>
 
+  <div class="field">
+    <%= form.label 'Delayed' %>
+    <%= form.check_box 'delayed', {}, 'yes' %>
+  </div>
+
   <div class="actions">
     <%= form.submit %>
   </div>

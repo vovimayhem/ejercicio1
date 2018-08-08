@@ -23,6 +23,7 @@ class PostsController < ApplicationController
 
   # POST /posts
   def create
+    return create_later if params.dig('post', 'delayed') == 'yes'
     @post = Post.new(post_params)
     @post.author = current_user
 
@@ -35,6 +36,7 @@ class PostsController < ApplicationController
 
   # PATCH/PUT /posts/1
   def update
+    return update_later if params.dig('post', 'delayed') == 'yes'
     if @post.update(post_params)
       redirect_to @post, notice: 'Post was successfully updated.'
     else
@@ -49,6 +51,17 @@ class PostsController < ApplicationController
   end
 
   private
+
+    def create_later
+      ProcessPostJob.perform_later post_params.to_h, current_user
+      redirect_to posts_path, notice: 'Post is being created.'
+    end
+
+    def update_later
+      ProcessPostJob.perform_later post_params.to_h, current_user, @post
+      redirect_to posts_path, notice: 'Post is being updated.'
+    end
+
     # Use callbacks to share common setup or constraints between actions.
     def set_post
       @post = Post.find(params[:id])
